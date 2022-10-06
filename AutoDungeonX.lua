@@ -269,12 +269,6 @@ Section:AddTextbox({
 
 function getHighestRQCM(Type,types)
 
-    local add = {
-        ["Rarity"] = "Rarities",
-        ["Quality"] = "Qualities",
-        ["Class"] = "Classes",
-        ["Mold"] = "Molds"
-    }
 
     local daddy = {}
 
