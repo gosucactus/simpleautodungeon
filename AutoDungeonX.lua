@@ -1,10 +1,5 @@
 repeat wait() until game:IsLoaded()
 
-local args = {
-    [1] = "Attack",
-    [2] = false}
-game:GetService("Players").LocalPlayer.Character.Sword.SwordScriptNew.Attack:FireServer(unpack(args))
-
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 if not LPH_OBFUSCATED then 
