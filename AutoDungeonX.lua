@@ -151,7 +151,7 @@ Name = "SFX",
 HidePremium = false,
 SaveConfig = false,
 ConfigFolder = "OrionTest",
-IntroText = "Made By Roge#4087"
+IntroText = "Made By gosucactus#6849"
 })
 
 local Tab = Window:MakeTab({
