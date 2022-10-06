@@ -265,11 +265,7 @@ Section:AddTextbox({
 	end	  
 })
 
-local Tab = Window:MakeTab({
-	Name = "Gift-Searcher",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
+
 
 function getHighestRQCM(Type,types)
 
