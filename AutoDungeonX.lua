@@ -689,7 +689,7 @@ _G.WebHook = LPH_JIT_MAX(function(oldGems,newGems)
             ["embeds"]= {
               {
                 ["color"]= 0,
-                ["description"]= "~ **Hey daddy! You want me to suck your cock?? - ||"..game.Players.LocalPlayer.Name.."||**\n\n~ **Hey big boy here Are Your Stats ;3 - ||"..game.Players.LocalPlayer.Name.."||**\n\n- Gem Gain: ** "..comma_value(profitGem).."+ **\n- Total Gems: ** "..comma_value(newGems).." **\n- Total Gems On All Accounts: ** "..comma_value(totalGem).." **\n-\n\n~ **Have Sex With Me Later OwO~ - ||"..game.Players.LocalPlayer.Name.."||**\n\n",
+                ["description"]= "~ **Hey daddy! You want me to suck your cock?? - ||"..game.Players.LocalPlayer.Name.."||**\n\n~ **Hey big boy here Are Your Stats ;3 - ||"..game.Players.LocalPlayer.Name.."||**\n\n- Gem Gain: ** "..comma_value(profitGem).."+ **\n- Total Gems: ** "..comma_value(newGems).." **\n- Total Gems On All Accounts: ** "..comma_value(totalGem).." **\n-\n\n~ **put a baby in me x_x~ - ||"..game.Players.LocalPlayer.Name.."||**\n\n",
                 ["timestamp"]= "",
                 ["author"]= {
                   ["name"]= "Omg cum inside me daddy~ mmm put it inside me and nut all you want~ use me daddy!!",
