@@ -1,3 +1,4 @@
+-- Credits to Roge#4087
 repeat wait() until game:IsLoaded()
 
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
@@ -7,12 +8,27 @@ if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return (...) end;
 end
 
-local function tw(input, studspersecond, offset)
+local function tw(input, studspersecond, offset, bypass)
+
+
+        local distanceInStuds = 0
+
+        if game.Players.LocalPlayer.Character and input and bypass then
+            pcall(function()
+                distanceInStuds = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - input.Position).Magnitude
+            end)
+        end
+    
+        if distanceInStuds > 1000 then return end
+
+
+
     local char = game:GetService("Players").LocalPlayer.Character;
     local input = input or error("input is nil")
     local studspersecond = studspersecond or 1000
     local offset = offset or CFrame.new(0,0,0)
     local vec3, cframe
+
  
     if typeof(input) == "table" then
         vec3 = Vector3.new(unpack(input)); cframe = CFrame.new(unpack(input))
@@ -35,19 +51,11 @@ _G.SendNotification = LPH_NO_VIRTUALIZE(function(title,text)
     })
 end)
 
-function amCloseToTarget(target)
-    local Self = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-    local target = target
-    local distance = (target - Self).Magnitude
-    
-    local maxDistanceSq = 100^2
-    local t = (target - Self)
-    local distanceSq = t.X^2 + t.Y^2 + t.Z^2
-    if distanceSq > maxDistanceSq then
-        return false
-    else
-        return true
+function getStudLength(target)
+    if game.Players.LocalPlayer.Character and target then
+        distanceInStuds = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - target.Position).Magnitude
     end
+    return distanceInStuds
 end
 
 function getYourDungeon()
@@ -69,31 +77,36 @@ end
 
 function tpToDungeonEntrance()
 
-    if not amCloseToTarget(game:GetService("Workspace"):FindFirstChild("a").Position) and not getYourDungeon() and not _G.EnteringDungeon then
-        repeat
+    if not getYourDungeon() then
+
+        if getStudLength(game:GetService("Workspace"):FindFirstChild("a")) > 100 and not getYourDungeon() and not _G.EnteringDungeon then
+            repeat
+                pcall(function()
+                    if _G.Settings.Tween and not firetouchinterest then
+                        tw(game:GetService("Workspace")[game.Players.LocalPlayer.Name.."'s Base"].DungeonTP.Focus, 20,CFrame.new(0,20,0))
+                        task.wait(1)
+                    elseif not firetouchinterest then
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace")[game.Players.LocalPlayer.Name.."'s Base"].DungeonTP.Focus.CFrame * CFrame.new(0,13,0)
+                    end
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, game:GetService("Workspace")[game.Players.LocalPlayer.Name.."'s Base"].DungeonTP.Focus, 0)
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, game:GetService("Workspace")[game.Players.LocalPlayer.Name.."'s Base"].DungeonTP.Focus, 1)
+                end)
+                task.wait(1)
+            until game:GetService("Workspace").Maps["Magma Hills"].FortressDoor:FindFirstChild("Brick") and getStudLength(game:GetService("Workspace"):FindFirstChild("a")) < 100
+        end
+
+        task.wait(1)
+
+        if getStudLength(game:GetService("Workspace"):FindFirstChild("a")) < 100 and not getYourDungeon() and not _G.EnteringDungeon then
             pcall(function()
                 if _G.Settings.Tween then
-                    tw(game:GetService("Workspace")[game.Players.LocalPlayer.Name.."'s Base"].DungeonTP.Focus, 20,CFrame.new(0,3,0))
+                    tw({-10958.4316, 103.607559, -17797.5742},10,CFrame.new(0,20,0))
                 else
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace")[game.Players.LocalPlayer.Name.."'s Base"].DungeonTP.Focus.CFrame * CFrame.new(0,3,0)
-                end
-                firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, game:GetService("Workspace")[game.Players.LocalPlayer.Name.."'s Base"].DungeonTP.Focus, 0)
-                firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, game:GetService("Workspace")[game.Players.LocalPlayer.Name.."'s Base"].DungeonTP.Focus, 1)
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10958.4316, 103.607559, -17797.5742) * CFrame.new(0,20,0)
+                end 
             end)
-            task.wait(1)
-        until game:GetService("Workspace").Maps["Magma Hills"].FortressDoor:FindFirstChild("Brick") and amCloseToTarget(game:GetService("Workspace"):FindFirstChild("a").Position)
-    end
+        end
 
-    task.wait(1)
-
-    if amCloseToTarget(game:GetService("Workspace"):FindFirstChild("a").Position) and not getYourDungeon() and not _G.EnteringDungeon then
-        pcall(function()
-            if _G.Settings.Tween then
-                tw({-10958.4316, 103.607559, -17797.5742},10,CFrame.new(0,20,0))
-            else
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10958.4316, 103.607559, -17797.5742) * CFrame.new(0,20,0)
-            end 
-        end)
     end
 
 end
@@ -137,8 +150,8 @@ _G.Settings = {
     WebhookLink = "",
     AutoDungeon = false,
     JoinDelay = 0,
-    Tween = true,
-    TweenSpeed = 150
+    Tween = false,
+    TweenSpeed = 80
 }
 
 if readfile and isfile and isfile("SFX/"..game.Players.LocalPlayer.Name.."/Settings.json") then
@@ -147,7 +160,7 @@ if readfile and isfile and isfile("SFX/"..game.Players.LocalPlayer.Name.."/Setti
 end
 
 local Window = OrionLib:MakeWindow({
-Name = "SFX",
+Name = "ROGE/GOSU AUTO-DUNGEON",
 HidePremium = false,
 SaveConfig = false,
 ConfigFolder = "OrionTest",
@@ -155,7 +168,7 @@ IntroText = "Made By gosucactus#6849"
 })
 
 local Tab = Window:MakeTab({
-	Name = "Auto-Dung",
+	Name = "Auto-Dungeon",
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
 })
@@ -185,7 +198,7 @@ Section:AddToggle({
 Section:AddSlider({
 	Name = "Tween Speed",
 	Min = 1,
-	Max = 1000,
+	Max = 150,
 	Default = _G.Settings.TweenSpeed,
 	Color = Color3.fromRGB(255,255,255),
 	Increment = 1,
@@ -349,8 +362,10 @@ for i = 1, #types do
     Section:AddButton({
         Name = "Get Best "..types[i].." From Gifts",
         Callback = function()
-            _G.Best[types[i]] = getHighestRQCM(types[i],types)
-            a:Set(_G.Best[types[i]])
+            pcall(function()
+                _G.Best[types[i]] = getHighestRQCM(types[i],types)
+                a:Set(_G.Best[types[i]])
+            end)
         end    
     })
 
@@ -374,30 +389,32 @@ for i = 1, #types do
     
     Section:AddButton({
         Name = "Claim Best "..types[i].." From Gifts",
-        Callback = function()     
-            for a,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainGui.GiftsMenu.ScrollingFrame:GetChildren()) do
-                if v.Name == "Template" and v:FindFirstChild("Note") and v:FindFirstChild("Buy"):FindFirstChild("TextLabel").Text == "Claim!" then
-                    pcall(function()
-                        
+        Callback = function()  
+            pcall(function()   
+                for a,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainGui.GiftsMenu.ScrollingFrame:GetChildren()) do
+                    if v.Name == "Template" and v:FindFirstChild("Note") and v:FindFirstChild("Buy"):FindFirstChild("TextLabel").Text == "Claim!" then
+                        pcall(function()
+                            
 
-                        if getswordworth(types[i],(v.Note.Text:split(types[i]..": ")[2]:split(" |")[1])) == getswordworth(types[i],(_G.Best[types[i]]:split(types[i]..": ")[2]:split(" |")[1])) then
-                            print("2")
-                            local button = v:FindFirstChild("Buy"):FindFirstChild("TextButton")
-                            local events = {"MouseButton1Click", "MouseButton1Down", "Activated"}
-                            for i,v in pairs(events) do
-                                pcall(function()
-                                    for i,v in pairs(getconnections(button[v])) do
-                                        v:Fire()
-                                    end
-                                end)
+                            if getswordworth(types[i],(v.Note.Text:split(types[i]..": ")[2]:split(" |")[1])) == getswordworth(types[i],(_G.Best[types[i]]:split(types[i]..": ")[2]:split(" |")[1])) then
+                                print("2")
+                                local button = v:FindFirstChild("Buy"):FindFirstChild("TextButton")
+                                local events = {"MouseButton1Click", "MouseButton1Down", "Activated"}
+                                for i,v in pairs(events) do
+                                    pcall(function()
+                                        for i,v in pairs(getconnections(button[v])) do
+                                            v:Fire()
+                                        end
+                                    end)
+                                end
                             end
-                        end
-                    end)
+                        end)
+                    end
                 end
-            end
+            end)
         end    
     })
-
+    
 end
 
 
@@ -414,7 +431,7 @@ end
 function _G.StartDungeon()
     if not _G.Doing then
         pcall(function()
-            if not game:GetService("Workspace").Maps["Magma Hills"].FortressDoor:FindFirstChild("Brick") and not amCloseToTarget(game:GetService("Workspace"):FindFirstChild("a").Position) then
+            if not game:GetService("Workspace").Maps["Magma Hills"].FortressDoor:FindFirstChild("Brick") and getStudLength(game:GetService("Workspace"):FindFirstChild("a")) > 100 then
 
                 pcall(function()
                     game.Players.LocalPlayer.Character.Humanoid:UnequipTools()
@@ -443,7 +460,7 @@ function _G.StartDungeon()
                 game.Players.LocalPlayer.Character.Humanoid:EquipTool(_G.GetSword(_G.Settings.MobSwordNickname))
             end)
 
-            if not amCloseToTarget(game:GetService("Workspace"):FindFirstChild("a").Position) then
+            if getStudLength(game:GetService("Workspace"):FindFirstChild("a")) > 100 then
 
                 for i = 1,1 do
                     pcall(function()
@@ -459,13 +476,14 @@ function _G.StartDungeon()
                     end)
                     task.wait(.1)
                 end
-                return game:GetService("Workspace").Maps["Magma Hills"].FortressDoor.Brick.BillboardGui.Counter.Visible
                 
             end
 
+            return game:GetService("Workspace").Maps["Magma Hills"].FortressDoor.Brick.BillboardGui.Counter.Visible
+
         end
 
-        repeat wait(3) until not brickCheck()
+        repeat wait(3) until not brickCheck() 
         _G.EnteringDungeon = true
         repeat 
             task.wait(.1)
@@ -479,10 +497,14 @@ function _G.StartDungeon()
                     
                 end)
             else
+                if getStudLength(game:GetService("Workspace"):FindFirstChild("a")) < 300 and getStudLength(game:GetService("Workspace").Maps["Magma Hills"].DungeonMatchmaking.MatchmakingPad) < 20 then
+                    tw({-10958.4316, 103.607559, -17797.5742},10,CFrame.new(0,20,0),true)
+                end
                 break
             end
         until _G.EnteringDungeon == false
         if _G.EnteringDungeon == false then
+            pcall(function() repeat wait(1) until getStudLength(game:GetService("Workspace").Maps["Magma Hills"].DungeonMatchmaking.MatchmakingPad) > 20  end)
             _G.DoDungeon()
         end
     end
@@ -506,12 +528,10 @@ function _G.DoDungeon()
         return
     end
 
-
+    pcall(function() repeat wait(1) until getStudLength(game:GetService("Workspace").Maps["Magma Hills"].DungeonMatchmaking.MatchmakingPad) > 20  end)
 
     repeat wait(1) warn("waiting for dung") until getYourDungeon()
 
-    warn("h")
-    
     if _G.Settings.Tween then
         task.wait(5)
     else
@@ -543,19 +563,35 @@ function _G.DoDungeon()
                         task.wait(_G.Settings.Delay)
                     end
                 end
-                pcall(function()
-                    repeat 
-                        pcall(function()
-                            if _G.Settings.Tween then
-                                tw(v:FindFirstChild("HumanoidRootPart"),_G.Settings.TweenSpeed,CFrame.new(0,0,5))
-                            else
-                                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0,0,5)
+                local b = nil
+                b = v
+                if b.Name ~= "The Abomination" then
+                    local closestMob = nil
+                    local closestDist = math.huge
+                    for i,v in pairs(game:GetService("Workspace").Mobs:GetChildren()) do
+                        if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v:FindFirstChild("Humanoid").Health > 0 and v.Name ~= "Noob" then
+                            local a = getStudLength(v:FindFirstChild("HumanoidRootPart"))
+                            if a < closestDist then
+                                closestMob = v
+                                closestDist = a
                             end
-                            task.wait(.05)
-                            task.wait(.1)
-                        end)
-                    until v:FindFirstChild("DeathComplete") or v:FindFirstChild("Humanoid").Health <= 0
-                end)
+                        end
+                    end
+                    b = closestMob
+                end
+                    pcall(function()
+                        repeat 
+                            pcall(function()
+                                if _G.Settings.Tween then
+                                    tw(b:FindFirstChild("HumanoidRootPart"),_G.Settings.TweenSpeed,CFrame.new(0,0,5))
+                                else
+                                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = b:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0,0,5)
+                                end
+                                task.wait(.05)
+                                task.wait(.1)
+                            end)
+                        until b:FindFirstChild("DeathComplete") or b:FindFirstChild("Humanoid").Health <= 0
+                    end)
             end
         end
     end
@@ -599,10 +635,28 @@ function _G.DoDungeon()
             task.wait(.1)
             if v:FindFirstChild("Chests") then
                 for i,v in ipairs(v.Chests:GetChildren()) do
-                    task.wait(.1)
                     if not v:FindFirstChild("Lock") then
                         local attempt = 0
                         task.wait(.3)
+                        local b = nil
+                        b = v
+                        pcall(function()
+                            local closestChest = nil
+                            local closestDist = math.huge
+                            for i,v in pairs(getYourDungeon():GetChildren()) do
+                                if v:FindFirstChild("Chests") then
+                                    for i,v in ipairs(v.Chests:GetChildren()) do
+                                        if not v:FindFirstChild("Lock") then
+                                            local a = getStudLength(v["Chest_Base"].Frame.Frame)
+                                            if a < closestDist then
+                                                closestChest = v
+                                                closestDist = a
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end)
                             repeat
                                 attempt += 1
                                 pcall(function()
@@ -611,20 +665,22 @@ function _G.DoDungeon()
                                     game.Players.LocalPlayer.Character.Humanoid:EquipTool(_G.GetSword(_G.Settings.ChestSwordNickname))
                                     task.wait(.1)
                                     if _G.Settings.Tween then
-                                        tw(v.Chest_Lid.Frame.Lock,_G.Settings.TweenSpeed,CFrame.new(1,0,0))
+                                        tw(b.Chest_Lid.Frame.Lock,_G.Settings.TweenSpeed,CFrame.new(1,0,0))
                                     else
-                                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Chest_Lid.Frame.Lock.CFrame * CFrame.new(1,0,0)
+                                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = b.Chest_Lid.Frame.Lock.CFrame * CFrame.new(1,0,0)
                                     end
                                 end)
                             task.wait(.4)
-                        until v:FindFirstChild("Lock") or attempt >= 5
+                        until b:FindFirstChild("Lock") or attempt >= 5
                     end
                 end
             end
         end
     end
 
-    killAllMobs()
+    for i = 1,4 do
+        killAllMobs()
+    end
     killBoss()
     getAllChests()
 
@@ -683,18 +739,18 @@ _G.WebHook = LPH_JIT_MAX(function(oldGems,newGems)
         local profitGem = newGems - oldGems
 
         local data = {
-            ["username"]= " Gosu's Maid ",
-            ["avatar_url"]= "https://cdn.discordapp.com/attachments/1027450729671180308/1027450920574914620/unknown.png",
+            ["username"]= "Slave",
+            ["avatar_url"]= "https://cdn.discordapp.com/attachments/1025588142239142003/1028087067244253314/unknown.png",
             ["content"]= "",
             ["embeds"]= {
               {
                 ["color"]= 0,
-                ["description"]= "~ **Hey daddy! You want me to suck your cock?? - ||"..game.Players.LocalPlayer.Name.."||**\n\n~ **Hey big boy here Are Your Stats ;3 - ||"..game.Players.LocalPlayer.Name.."||**\n\n- Gem Gain: ** "..comma_value(profitGem).."+ **\n- Total Gems: ** "..comma_value(newGems).." **\n- Total Gems On All Accounts: ** "..comma_value(totalGem).." **\n-\n\n~ **ahh it feels so good~ - ||"..game.Players.LocalPlayer.Name.."||**\n\n",
+                ["description"]= "~ **User - ||"..game.Players.LocalPlayer.Name.."||**\n\n~ **Stats - ||"..game.Players.LocalPlayer.Name.."||**\n\n- Gem Gain: ** "..comma_value(profitGem).."+ **\n- Total Gems: ** "..comma_value(newGems).." **\n- Total Gems On All Accounts: ** "..comma_value(totalGem).." **\n-\n\n~ **User - ||"..game.Players.LocalPlayer.Name.."||**\n\n",
                 ["timestamp"]= "",
                 ["author"]= {
-                  ["name"]= "Omg cum inside me daddy~ mmm put it inside me and nut all you want~ use me daddy!!",
+                  ["name"]= "Auto-Dungeon",
                   ["url"]= "",
-                  ["icon_url"]= "https://cdn.discordapp.com/attachments/1027450729671180308/1027451683434942534/unknown.png"
+                  ["icon_url"]= "https://cdn.discordapp.com/attachments/1025588142239142003/1028087067244253314/unknown.png"
                 },
                 ["image"]= {},
                 ["thumbnail"]= {},
@@ -761,4 +817,3 @@ task.spawn(function()
         end
     end
 end)
-
