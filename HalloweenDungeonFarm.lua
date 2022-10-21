@@ -1,6 +1,3 @@
--- -22806, 149880, -22862 inside
--- -372, 11478, -1418 outside 
-getgenv().autoDungeon = true
 while autoDungeon == true do
     wait(0.5)
         local args = {
@@ -8,12 +5,9 @@ while autoDungeon == true do
     [2] = false}
 game:GetService("Players").LocalPlayer.Character.Sword.SwordScriptNew.Attack:FireServer(unpack(args))
     wait(0.5)
-local args = {
-    [1] = game:GetService("ReplicatedStorage").Data.edbfbefwef.Stats,
-    [2] = workspace:FindFirstChild("edbfbefwef's Base"),
-    [3] = "edbfbefwef",
-    [4] = "Graveyard"}
-game:GetService("ReplicatedStorage").Events.ToMap:FireServer(unpack(args))
+repstorage = game.ReplicatedStorage
+plr = game.Players.LocalPlayer
+game:GetService("ReplicatedStorage").Events.ToMap:FireServer(repstorage.Data[plr.Name].Stats,workspace:FindFirstChild(plr.Name.."'s Base"),plr.Name,"Graveyard")
 wait(3)
 repeat wait() until game:GetService("Workspace").Maps.Graveyard.Brick.BillboardGui.Counter.Visible == false
 wait(0.5)
